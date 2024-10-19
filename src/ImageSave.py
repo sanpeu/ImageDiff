@@ -21,7 +21,31 @@ src.save('./image/src.jpg')
 dest.save('./image/dest.jpg')
 
 diff = ImageChops.difference(src, dest)
-diff.save('./image/diff.png')
+diff.save('./image/diff.jpg')
 
-while not os.path.exists('./image/diff.png'):
-    time.sleep(1000)
+while not os.path.exists('./image/diff.jpg'):
+    time.sleep(1)
+
+# 이미지 전처리, 윤곽선 추출
+import cv2
+src_img = cv2.imread('./image/src.jpg')
+dest_img = cv2.imread('./image/dest.jpg')
+diff_img = cv2.imread('./image/diff.jpg')
+
+gray = cv2.cvtColor(diff_img, cv2.COLOR_BGR2GRAY) # gray로 바꾸기
+contours, _ = cv2.findContours(gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+COLOR = (0, 200, 0)
+
+for cnt in contours:
+    if cv2.contourArea(cnt) > 100:
+        x, y, width, height = cv2.boundingRect(cnt)
+        cv2.rectangle(src_img, (x, y), (x + width, y + height), COLOR, 2)
+        cv2.rectangle(dest_img, (x, y), (x + width, y + height), COLOR, 2)
+        cv2.rectangle(diff_img, (x, y), (x + width, y + height), COLOR, 2)
+
+cv2.imshow('src', src_img)
+cv2.imshow('dest', dest_img)
+cv2.imshow('diff', diff_img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
